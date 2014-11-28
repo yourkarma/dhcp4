@@ -21,6 +21,15 @@ func (s *serveIfConn) ReadFrom(b []byte) (n int, addr net.Addr, err error) {
 }
 
 func (s *serveIfConn) WriteTo(b []byte, addr net.Addr) (n int, err error) {
+	ip, _, err := net.SplitHostPort(addr.String())
+	if err != nil {
+		return n, err
+	}
+
+	if !net.ParseIP(ip).Equal(net.IPv4bcast) {
+		s.cm.Src, s.cm.Dst = s.cm.Dst, s.cm.Src
+	}
+
 	return s.conn.WriteTo(b, s.cm, addr)
 }
 
